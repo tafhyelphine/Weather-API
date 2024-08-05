@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Weather App</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background-size: cover;
+            background-position: center;
+            transition: background-image 0.5s ease;
+            overflow: hidden; /* Hide scrollbar */
+        }
+
+        .heading {
+            text-align: center;
+            margin-top: 50px;
+        }
+
+        .entry-container {
+            max-width: 500px;
+            margin: 20px auto;
+            padding: 20px;
+            background-color: rgba(255, 255, 255, 0.7);
+            border-radius: 20px; /* More rounded edges */
+        }
+
+        .entry-container input[type="text"] {
+            margin-top: 10px;
+            padding: 10px; /* Increased padding */
+            width: calc(100% - 20px); /* Adjusted width for input */
+            border-radius: 20px; /* More rounded edges */
+            border: 1px solid #6f9262;
+            outline: none;
+        }
+
+        .entry-container button {
+            margin-top: 10px;
+            padding: 10px; /* Increased padding */
+            width: calc(100% - 20px); /* Adjusted width for button */
+            border-radius: 20px; /* More rounded edges */
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            cursor: pointer;
+            outline: none;
+        }
+
+        .entry-container button:hover {
+            background-color: #45a049;
+        }
+
+        .output-container {
+            max-width: 630px;
+            margin: 20px auto;
+            padding: 20px;
+            background-color: rgba(205, 205, 205, 0.418);
+            border-radius: 10px;
+            text-align: left;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            height: 400px; /* Fixed height to demonstrate centering */
+        }
+
+        #weatherInfo {
+            margin-top: 20px;
+            text-align: center; /* Center align the text */
+        }
+    </style>
+</head>
+<body style="background-image: url('/static/tree.jpg');">
+    <div class="heading">
+        <h1>Weather App</h1>
+    </div>
+
+    <div class="entry-container">
+        <form onsubmit="return false;">
+            <input type="text" id="cityInput" placeholder="Enter city name">
+            <button type="submit" onclick="getWeather()">Get Weather</button>
+        </form>
+    </div>
+
+    <div class="output-container">
+        <div id="weatherInfo"></div>
+    </div>
+
+    <script>
+        function updateBackground(weatherDescription) {
+            var backgroundImage;
+
+            // Convert weather description to lowercase for case-insensitive matching
+            var lowerCaseDescription = weatherDescription.toLowerCase();
+
+            // Check if the description contains certain keywords
+            if (lowerCaseDescription.includes('clear')) {
+                backgroundImage = 'url("/static/clear.jpg")';
+            } else if (lowerCaseDescription.includes('cloud')) {
+                backgroundImage = 'url("/static/cloudy.jpg")';
+            } else if (lowerCaseDescription.includes('rain')) {
+                backgroundImage = 'url("/static/rainy.webp")';
+            } else if (lowerCaseDescription.includes('haze')) {
+                backgroundImage = 'url("/static/haze.jpg")';
+            } else if (lowerCaseDescription.includes('clear')) {
+                backgroundImage = 'url("/static/sunny.jpg")';
+            } else if (lowerCaseDescription.includes('snow')) {
+                backgroundImage = 'url("/static/snowy.jpg")';
+            } else {
+                // Fallback background for unknown weather descriptions
+                backgroundImage = 'url("/static/clear.jpg")';
+            }
+
+            // Set background image
+            document.body.style.backgroundImage = backgroundImage;
+        }
+
+        function getWeather() {
+            var city = document.getElementById("cityInput").value;
+            fetch(`/weather?city=${city}`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.error) {
+                        document.getElementById("weatherInfo").innerHTML = `<p>${data.error}</p>`;
+                    } else {
+                        // Update background based on weather description
+                        updateBackground(data.weather_description);
+
+                        // Display weather information
+                        displayWeatherInfo(data);
+                    }
+                })
+                .catch(error => {
+                    console.error("Error fetching weather data:", error);
+                    // Log any errors encountered during the fetch request
+                });
+        }
+
+        function displayWeatherInfo(data) {
+            var weatherHTML = `
+                <h2>Weather Stats for - ${data.location} ${data.country} || ${data.date_time}</h2>
+                <p>Current temperature is: ${data.current_temperature} deg C</p>
+                <p>Feels like: ${data.feels_like_temperature} deg C</p>
+                <p>Minimum temperature: ${data.minimum_temperature} deg C</p>
+                <p>Maximum Temperature: ${data.maximum_temperature} deg C</p>
+                <p>Current weather description: ${data.weather_description}</p>
+                <p>Pressure: ${data.pressure} hPa</p>
+                <p>Current Humidity: ${data.humidity} %</p>
+                <p>Current wind speed is: ${data.wind_speed} kmph</p>
+                <p>Current visibility is: ${data.visibility} m</p>
+            `;
+            document.getElementById("weatherInfo").innerHTML = weatherHTML;
+        }
+    </script>
+</body>
+</html>
